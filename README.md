@@ -15,7 +15,7 @@ Analyzing the QueryResponse;
 <h2>Running </h2>
 This is a Maven project.Use Maven to import the necessary package ,then change the PublicOpionModel.class with your db field as well as in services;
 Modifing the url into which your solr's url;<br>
-<h5>Working the HTML</h5>
+<h4>Working the HTML</h4>
 Running the commond : mvn spring-boot:run -Dserver.port=9000;<br>
 Listenning in localhost:9000;
 
