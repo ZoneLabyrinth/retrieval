@@ -1,27 +1,25 @@
 package com.retrieval.controllers;
 
-import com.retrieval.models.PublicOpionModel;
-import com.retrieval.services.PublicOpionService;
+import com.retrieval.services.InnovativeService;
 import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.*;
+import java.util.HashMap;
 
 /**
- * Created by sks on 2017/9/21.
+ * Created by sks on 2017/10/11.
  */
 @RestController
-public class PublicOpionController {
-
-    private PublicOpionService solrServer;
+public class InnovativeController {
+    private InnovativeService solrServer;
 
     private HttpSolrClient httpSolrServer;
 
 
-    @RequestMapping(value = "/searching", method = {RequestMethod.POST, RequestMethod.GET})
+    @RequestMapping(value = "/innovativeSearching", method = {RequestMethod.POST, RequestMethod.GET})
     @ResponseBody
 //    public List<PublicOpionModel> searching(@RequestBody(required = false)String navtitle)throws Exception{
     public ResponseEntity<Object> searching(@RequestBody String term,
@@ -32,11 +30,11 @@ public class PublicOpionController {
         System.out.println(page);
         System.out.println(term);
 
-        String serverUrl = "http://10.10.4.48:8983/solr/uradar_article_shard2_replica2";
+        String serverUrl = "http://10.10.4.50:8983/solr/Innovation_Platform_shard1_replica3";
 
         HttpSolrClient httpSolrServer = new HttpSolrClient(serverUrl);
 
-        solrServer = new PublicOpionService(httpSolrServer);
+        solrServer = new InnovativeService(httpSolrServer);
 
         HttpHeaders responseHeaders = new HttpHeaders();
 
@@ -53,5 +51,7 @@ public class PublicOpionController {
 //        responseHeaders.set("total_count",res.count);
         return new ResponseEntity<Object>(datas, responseHeaders, HttpStatus.CREATED);
     }
+
+
 
 }

@@ -45,8 +45,11 @@
             dataType: 'json',
             data:content,
             contentType:'application/json;charset=UTF-8',
-            url: "http://localhost:8080/searching"
-        }).then(function(data, status, jqxhr) {
+            url: "http://localhost:8080/searching",
+            page:2
+        }).then(function(data, responseHeaders, jqxhr) {
+            // console.log(jqxhr.getAllResponseHeaders());
+            console.log(jqxhr.getResponseHeader("X-Total-Count"));
             console.log(data);
             for(var i=0;i<data.length;i++){
                 var html = data[i];
@@ -57,8 +60,8 @@
 
                 console.log(date);
 
-                 inner += "<div class='title'><a href='"+html.url+"' target='_blank'><span class='col-md-8'>"+ html.title+"</span>" +
-                    "<span class='col-md-4'>"+date+"</span></a></div>"
+                 inner += "<div class='title'><a href='"+html.url+"' target='_blank'><span class='col-sm-8'>"+ html.title+"</span>" +
+                    "<span class='col-sm-4'>"+date+"</span></a></div>"
             }
             self.resultContainer.html(inner)
             // $("").innerHTML = html;

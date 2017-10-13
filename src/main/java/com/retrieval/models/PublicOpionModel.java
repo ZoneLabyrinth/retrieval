@@ -9,11 +9,24 @@ import java.util.Date;
  */
 public class PublicOpionModel {
     @Field
+    private String id;
+    @Field
     private String title;
     @Field
     private String url;
     @Field
     private String dateTime;
+    @Field
+    private String content;
+
+
+    public String getId(){
+        return id;
+    }
+
+    public void setId(String id){
+        this.id=id;
+    }
 
     public String getTitle(){
         return title;
@@ -40,9 +53,17 @@ public class PublicOpionModel {
         this.dateTime = dateTime;
     }
 
+    public String getContent(){
+        return content;
+    }
+
+    public void setContent(String content){
+        this.content = content;
+    }
+
 
     @Override
     public String toString() {
-        return "[title:"+title+",url:"+url+"dateTime:"+dateTime+"]";
+        return "[id"+id+"title:"+title+",url:"+url+",dateTime:"+dateTime+"]";
     }
 }

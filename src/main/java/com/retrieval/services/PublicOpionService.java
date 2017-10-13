@@ -6,9 +6,13 @@ import org.apache.solr.client.solrj.impl.HttpSolrClient;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrDocument;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ResponseBody;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.regex.Pattern;
 
 import static org.apache.solr.client.solrj.SolrQuery.ORDER.desc;
 
@@ -18,49 +22,102 @@ import static org.apache.solr.client.solrj.SolrQuery.ORDER.desc;
 public class PublicOpionService {
     private HttpSolrClient solrServer;
 
-    public PublicOpionService (HttpSolrClient solrServer){
+
+    public PublicOpionService(HttpSolrClient solrServer) {
         this.solrServer = solrServer;
     }
 
     /**
      * 创建搜索方法
+     *
      * @param keywords
      * @param rows
      * @return List
      */
 
-    public List<PublicOpionModel> search(String keywords,Integer rows) throws Exception{
-        SolrQuery solrQuery = new SolrQuery();
-        solrQuery.setQuery("keywords:"+keywords);
-        solrQuery.setRows(rows);
-        solrQuery.addSort("publish_time",desc);
+//    public List<PublicOpionModel> search(String keywords,Integer page, Integer rows) throws Exception{
+    public HashMap search(String keywords, Integer page, Integer rows) throws Exception {
 
+        HashMap map = new HashMap();
+
+        /**
+         * solr查询
+         */
+
+        SolrQuery solrQuery = new SolrQuery();
+        solrQuery.setQuery("keywords:" + keywords);
+        solrQuery.setRows(rows);
+        solrQuery.setStart((Math.max(page, 1) - 1) * rows);
+        solrQuery.addSort("publish_time", desc);
+        System.out.println("+++++++++++++++++++++++" + solrServer.query(solrQuery).getResults().getNumFound());
         QueryResponse res = solrServer.query(solrQuery);
 
         List data = new ArrayList();
 
         SolrDocumentList docs = res.getResults();
 
+        /**
+         * 将取得的结果按需要添加入data里；
+         */
 
-        for (SolrDocument doc : docs){
+        for (SolrDocument doc : docs) {
             PublicOpionModel models = new PublicOpionModel();
+            String id = doc.getFieldValue("id").toString();
             String title = doc.getFieldValue("title").toString();
             String url = doc.getFieldValue("url").toString();
-            String dateTime = doc.getFieldValue("publish_time").toString();
-            url = url.replaceAll("[\\[\\]]","");
 
-            dateTime = dateTime.replaceAll("[\\[\\]]","");
+            //改变文本颜色
+            String contents = doc.getFieldValue("content").toString();
+//            String regx =
+
+            Pattern pattern = Pattern.compile("<([^>]*)>");
+
+            contents = contents.replaceAll("<([^>]*)>","");
+
+            contents = contents.replaceAll(keywords,"<em>"+keywords+"</em>");
+
+            title = title.replaceAll(keywords,"<em>"+keywords+"</em>");
+
+            /**
+             * 此处由于取得时间的变为CTS引发错时区错误，在原来时间基础偏移了8小时，
+             * 通过将时区转换获得正确时间
+             */
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            String formatStr = formatter.format(doc.getFieldValue("publish_time"));
+//            System.out.println(formatStr);
+            Date time = formatter.parse(formatStr);
+            TimeZone timeZone = TimeZone.getTimeZone("GMT-8:00");
+// dateTime是格林威治时间
+            long chineseMills = time.getTime() + timeZone.getRawOffset();
+            Date chineseDateTime = new Date(chineseMills);
+
+            String dateTime = formatter.format(chineseMills);
+//            System.out.println(dateTime);
+            url = url.replaceAll("[\\[\\]]", "");
+
+            dateTime = dateTime.replaceAll("[\\[\\]]", "");
+            models.setId(id);
             models.setUrl(url);
             models.setTitle(title);
             models.setDateTime(dateTime);
+            models.setContent(contents);
             data.add(models);
 
         }
-        System.out.println(data);
 
-        /**
-         * 以下方法可以得到查询直接返回的title和url，但url原类型为array；
-         */
+        map.put("data", data);
+        map.put("X-Total-Count", docs.getNumFound());
+
+
+        return map;
+
+    }
+
+
+}
+/**
+ * 以下方法可以得到查询直接返回的title和url，但url原类型为array；
+ */
 //        boolean isHighlighting = !StringUtils.equals("*", keywords) && StringUtils.isNotEmpty(keywords);
 //
 //        if (isHighlighting) {
@@ -97,9 +154,4 @@ public class PublicOpionService {
 //        }
 
 
-        return data;
 
-    }
-
-
-}
